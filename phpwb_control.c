@@ -297,6 +297,7 @@ ZEND_FUNCTION(wb_get_value)
 			add_next_index_long(return_value, items[i]);
 
 		efree(items);
+/* wb_create_items value only integer|null or adress possible, otherwise we need to allocate memory !   GYW
 
 	} else if(((PWBOBJ)pwbo)->uClass == TreeView) {	// TreeView: returns whatever zval is
 
@@ -326,7 +327,7 @@ ZEND_FUNCTION(wb_get_value)
 			default:
 				RETURN_NULL();
 		}
-
+*/
 	} else {
 
 		RETURN_LONG(wbGetValue((PWBOBJ)pwbo));
@@ -600,13 +601,9 @@ ZEND_FUNCTION(wb_delete_items)
 			break;
 
 		case IS_LONG:				// Delete an item
-		// 2016_08_12 - Jared Allard: no more IS_BOOL, use IS_TRUE || IS_FALSE
 		case IS_TRUE:
-			((PWBOBJ)pwbo)->item = zitems->value.lval;
-			RETURN_LONG(wbDeleteItems((PWBOBJ)pwbo, FALSE));
-			break;
 		case IS_FALSE:
-			((PWBOBJ)pwbo)->item = zitems->value.lval;
+			((PWBOBJ)pwbo)->item = Z_LVAL_P(zitems);
 			RETURN_LONG(wbDeleteItems((PWBOBJ)pwbo, FALSE));
 			break;
 

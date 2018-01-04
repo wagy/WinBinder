@@ -102,7 +102,7 @@ BOOL wbCallUserFunction(LPCTSTR pszFunctionName, LPCTSTR pszObjectName, PWBOBJ p
 	if(!pszObjectName && !zend_is_callable(&fname, 0, &funName)) {
 		zend_error(E_WARNING, "%s(): '%s' is not a function or cannot be called",
 		  get_active_function_name(TSRMLS_C), funName);
-		efree(funName);				// These two lines prevent a leakage
+		if (funName) efree(funName);				// These two lines prevent a leakage
 		return FALSE;
 	}
 
@@ -148,7 +148,7 @@ BOOL wbCallUserFunction(LPCTSTR pszFunctionName, LPCTSTR pszObjectName, PWBOBJ p
 	}
 
 	// Free everything we can
-	efree(funName);			
+	if (funName) efree(funName);
 	return TRUE;
 }
 

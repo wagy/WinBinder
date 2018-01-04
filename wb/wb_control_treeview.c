@@ -149,17 +149,18 @@ BOOL wbGetTreeViewItemText(PWBOBJ pwbo, HTREEITEM hItem, LPTSTR pszText, int nCh
 
 LPARAM wbGetTreeViewItemValue(PWBOBJ pwbo, HTREEITEM hItem)
 {
-	TV_ITEM tvi;
+	TV_ITEM tvi = { 0 };
 
-	if(!wbIsWBObj(pwbo, TRUE))					// Is it a valid control?
+
+	if (!wbIsWBObj(pwbo, TRUE))					// Is it a valid control?
 		return 0;
 
-	if(!hItem)
+	if (!hItem)
 		return 0;
 
 	tvi.hItem = hItem;
 	tvi.mask = TVIF_PARAM;
-	if(TreeView_GetItem(pwbo->hwnd, &tvi))
+	if (TreeView_GetItem(pwbo->hwnd, &tvi))
 		return tvi.lParam;
 	else
 		return 0;
@@ -479,7 +480,6 @@ HTREEITEM wbAddTreeViewItemLevel(PWBOBJ pwbo, int nLevel, LPTSTR lpszItem, int l
 	ptrdt->bCustomImages[nLevel] = (nImageIndex >= 0);	// Flags custom images
 
 	// Insert the item
-
 	ptrdt->hLast = TreeView_InsertItem(pwbo->hwnd, &tvins);
 	return ptrdt->hLast;
 }

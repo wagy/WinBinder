@@ -22,6 +22,8 @@
 #include <psapi.h>			// For memory information functions
 #include <ole2.h>			// For OleInitialize()
 #include <mmsystem.h>		// For PlaySound()
+#include <VersionHelpers.h>     // For VERSIONHELPERAPI
+
 
 //-------------------------------------------------------------------- CONSTANTS
 
@@ -96,15 +98,11 @@ BOOL wbInit(void)
 		return FALSE;
 
 	// Get the handle of the file used to create this process
-	/*
+	
 	hAppInstance = GetModuleHandle(NULL);
 
 	// Set the background color for tab controls
-
-	ovInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionExW(&ovInfo);
-
-	if(ovInfo.dwMajorVersion >= 5 && ovInfo.dwMinorVersion >= 1) {	// Windows XP only */
+	if(IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 2)) { //ovInfo.dwMajorVersion >= 5 && ovInfo.dwMinorVersion >= 1) {	// Windows XP only */
 
 		// Check if a manifest file exists
 
@@ -153,7 +151,7 @@ BOOL wbInit(void)
 				}
 			}
 		}
-	//}
+	}
 
 	if(!RegisterClasses())
 		return FALSE;
@@ -206,10 +204,14 @@ will take our shortcut combo and process it as a dialog message.
 WPARAM wbMainLoop(void)
 {
 	MSG msg;
+	BOOL bRet;
 
 	// Main message loop
-
-	while(GetMessage(&msg, NULL, 0, 0)) {
+	while( (bRet=GetMessage(&msg, NULL, 0, 0)) != 0) {
+		if (bRet == -1)
+		{
+			break;
+		}
 		if(!TranslateAccelerator(hAccelWnd, hAccelTable, &msg)) {
 	     	if(!hCurrentDlg || !IsDialogMessage(hCurrentDlg, &msg)) {
 				TranslateMessage(&msg);
@@ -1136,7 +1138,6 @@ LONG wbGetSystemInfo(LPCTSTR pszInfo, BOOL *pbIsString, LPTSTR pszString, UINT u
 		return 0;
 
 	} else if(!lstrcmpi(pszInfo, L"osnumber")) {
-/*
 		OSVERSIONINFO ovInfo;
 
 		ovInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -1146,7 +1147,6 @@ LONG wbGetSystemInfo(LPCTSTR pszInfo, BOOL *pbIsString, LPTSTR pszString, UINT u
 			ovInfo.dwMajorVersion,
 			ovInfo.dwMinorVersion);
 		*pbIsString = TRUE;
-		*/
 		return 0;
 
 	} else if(!lstrcmpi(pszInfo, L"consolemode")) {
@@ -1416,8 +1416,6 @@ static int _GetGDIObjects(void)
 
 static BOOL _GetOSVersionString(LPTSTR pszString)
 {
-	
-	/*
 	TCHAR szOS[256] = L"";
 	TCHAR szVer[256]= L"";
 	TCHAR szSP[256] = L"";
@@ -1576,7 +1574,6 @@ static BOOL _GetOSVersionString(LPTSTR pszString)
 	}
 
 	wsprintf(pszString, L"%s %s %s", szOS, szVer, szSP);
-	*/
 	return TRUE;
 }
 

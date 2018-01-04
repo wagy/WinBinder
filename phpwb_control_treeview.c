@@ -141,10 +141,10 @@ If zparam is NULL, does not change associated value.
 
 ZEND_FUNCTION(wbtemp_create_treeview_item)
 {
-	zend_long pwbo, where = 0, img1 = -1, img2 = -1, insertiontype = 0;
+	zend_long pwbo, where = 0, img1 = -1, img2 = -1, insertiontype = 0, lparam = 0;
 	char *str;
-	int str_len, lparam = 0;
-	zval *zparam = NULL;
+	int str_len;
+	zval *zparam;
 	BOOL setlparam = FALSE;
 
 	TCHAR *wcs = 0;
@@ -156,7 +156,7 @@ ZEND_FUNCTION(wbtemp_create_treeview_item)
 
 	if(!wbIsWBObj((void *)pwbo, TRUE))
 		RETURN_NULL()
-
+/* wb_create_items value only integer|null or adress possible, otherwise we need to allocate memory !   GYW */
 	switch(Z_TYPE_P(zparam)) {
 
 		case IS_NULL:				// Do not change lparam
@@ -165,12 +165,11 @@ ZEND_FUNCTION(wbtemp_create_treeview_item)
 			break;
 
 		default:
-			// 2016_08_12 - Jared Allard: Don't bother copying.
-			lparam = (LONG)zparam;
+			lparam = Z_LVAL_P(zparam);
 			setlparam = TRUE;
 			break;
 	}
-
+	
 	wcs = Utf82WideChar(str, str_len);
 	switch(insertiontype) {
 		case 0:						// 'where' is the level of insertion

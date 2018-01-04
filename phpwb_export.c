@@ -40,6 +40,10 @@ ZEND_MINFO_FUNCTION(winbinder);
 
 // PHPWB_WINSYS.C
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_get_address, 0, 0, 1)
+ZEND_ARG_INFO(1, source)
+ZEND_END_ARG_INFO()
+
 ZEND_FUNCTION(wb_main_loop);
 ZEND_FUNCTION(wb_find_file);
 ZEND_FUNCTION(wb_message_box);
@@ -305,7 +309,7 @@ zend_function_entry winbinder_functions[] =
 
 	// PHPWB_LOWLEVEL.C
 
-    ZEND_FE(wb_get_address, NULL)
+    ZEND_FE(wb_get_address, arginfo_get_address)
     ZEND_FE(wb_send_message, NULL)
     ZEND_FE(wb_peek, NULL)
     ZEND_FE(wb_poke, NULL)

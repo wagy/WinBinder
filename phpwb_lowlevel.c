@@ -103,6 +103,8 @@ ZEND_FUNCTION(wb_poke)
 
 /*
 
+The parameter must by reference for php 7
+
 Get the address of a string, double or integer
 // TODO: get the address of other objects
 
@@ -113,7 +115,7 @@ ZEND_FUNCTION(wb_get_address)
     zval *source;
 
     if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
-	  "z", &source) == FAILURE)
+	  "z/", &source) == FAILURE)
 		return;
 
 	zend_uchar sourcetype = Z_TYPE_P(source);
@@ -205,7 +207,8 @@ ZEND_FUNCTION(wb_get_function_address)
 
 ZEND_FUNCTION(wb_call_function)
 {
-	zend_long addr, retval = 0;
+	zend_long addr;
+	LONG retval = 0;
 	DWORD *param = NULL;
 	zval *array = NULL, *entry = NULL;
 	int i, nelem = 0;
@@ -266,7 +269,8 @@ ZEND_FUNCTION(wb_call_function)
 						break;
 
 					case IS_LONG:
-					case _IS_BOOL:
+					case IS_TRUE:
+					case IS_FALSE:
 						param[i] = Z_LVAL_P(entry);
 						break;
 				}
