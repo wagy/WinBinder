@@ -189,7 +189,7 @@ BOOL RegisterControlInTab(PWBOBJ pwboParent, PWBOBJ pwbo, UINT id, UINT nTab)
 
 // Look for children tab controls and assign the handler to them
 
-PWBOBJ AssignHandlerToTabs(HWND hwndParent, LPCTSTR pszObjName, LPCTSTR pszHandler)
+PWBOBJ AssignHandlerToTabs(HWND hwndParent, LPDWORD pszObj, LPCTSTR pszHandler)
 {
 	HWND hChild = NULL;
 	PWBOBJ poChild = NULL;
@@ -207,8 +207,8 @@ PWBOBJ AssignHandlerToTabs(HWND hwndParent, LPCTSTR pszObjName, LPCTSTR pszHandl
 
 		// An object name was passed
 
-		if(pszObjName && *pszObjName) {
-			poChild->pszCallBackObj = (LPTSTR)pszObjName;
+		if(pszObj != NULL) {
+			poChild->pszCallBackObj = pszObj;
 		} else
 			poChild->pszCallBackObj = NULL;
 
@@ -224,7 +224,7 @@ PWBOBJ AssignHandlerToTabs(HWND hwndParent, LPCTSTR pszObjName, LPCTSTR pszHandl
 
 		// ...and call this function recursively
 
-		AssignHandlerToTabs(hTabPage, pszObjName, pszHandler);
+		AssignHandlerToTabs(hTabPage, pszObj, pszHandler);
 	}
 	return poChild;
 }

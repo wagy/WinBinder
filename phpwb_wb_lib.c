@@ -65,19 +65,24 @@ BOOL wbError(LPCTSTR szFunction, int nType, LPCTSTR pszFmt, ...)
 
 // *** The use of parameter pwboParent in wbCallUserFunction() is not clear
 
-BOOL wbCallUserFunction(LPCTSTR pszFunctionName, LPCTSTR pszObjectName, PWBOBJ pwboParent, PWBOBJ pctrl, UINT id, LPARAM lParam1, LPARAM lParam2, LPARAM lParam3)
+UINT wbCallUserFunction(LPCTSTR pszFunctionName, LPDWORD pszObject, PWBOBJ pwboParent, PWBOBJ pctrl, UINT id, LPARAM lParam1, LPARAM lParam2, LPARAM lParam3)
 {
 	zval fname = { 0 };
-	zval oname = { 0 };
 	zval return_value = { 0 };
 	zval parms[CALLBACK_ARGS];
 	BOOL bRet;
+	UINT ret = 0;
 	char *pszFName;
 	char *pszOName;
 	zend_string *funName;
 	int name_len = 0;
 
 	TSRMLS_FETCH();
+
+	if (pszObject == NULL)
+	{
+		name_len = 0;
+	}
 
 	// Is there a callback function assigned to the window?
 
@@ -96,20 +101,23 @@ BOOL wbCallUserFunction(LPCTSTR pszFunctionName, LPCTSTR pszObjectName, PWBOBJ p
 		return FALSE;
 	}
 
+	
 	ZVAL_STRING(&fname, pszFName);
 
+	/* why we test again ??? GYW
 	// Error checking is VERY POOR for user methods (i.e. when pszObjectName is not NULL)
-	if(!pszObjectName && !zend_is_callable(&fname, 0, &funName)) {
+	if(pszObject == NULL && !zend_is_callable(&fname, 0, &funName)) {
 		zend_error(E_WARNING, "%s(): '%s' is not a function or cannot be called",
 		  get_active_function_name(TSRMLS_C), funName);
 		if (funName) efree(funName);				// These two lines prevent a leakage
 		return FALSE;
 	}
+	*/
 
 	// In case of an object
-	if(pszObjectName && *pszObjectName) {
-		ZVAL_STRING(&oname, pszObjectName);
-	} 
+	//if(pszObjectName && *pszObjectName) {
+	//	ZVAL_STRING(&oname, pszObjectName);
+	//} 
 
 
 	// PWBOBJ pointer
@@ -133,7 +141,7 @@ BOOL wbCallUserFunction(LPCTSTR pszFunctionName, LPCTSTR pszObjectName, PWBOBJ p
 	// Call the user function
 	bRet = call_user_function_ex(
 		CG(function_table),			// Hash value for the function table
-		&oname,						// Pointer to an object (may be NULL)
+		&pszObject,						// Pointer to an object (may be NULL)
 		&fname,						// Function name
 		&return_value,				// Return value
 		CALLBACK_ARGS,				// Parameter count
@@ -148,8 +156,14 @@ BOOL wbCallUserFunction(LPCTSTR pszFunctionName, LPCTSTR pszObjectName, PWBOBJ p
 	}
 
 	// Free everything we can
-	if (funName) efree(funName);
-	return TRUE;
+	//if (funName) efree(funName);
+	switch (Z_TYPE(return_value))
+	{
+		case IS_LONG:				
+		case IS_TRUE:
+		case IS_FALSE: ret = Z_LVAL(return_value); break;
+	}
+	return ret;
 }
 
 // Memory-allocation functions

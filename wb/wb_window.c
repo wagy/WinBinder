@@ -28,7 +28,7 @@
 
 #define CALL_CALLBACK(id,lp1,lp2,lp3)	/* Call user function */ \
 	{if(pwbobj && pwbobj->parent && pwbobj->parent->pszCallBackFn && *pwbobj->parent->pszCallBackFn) { \
-		wbCallUserFunction(pwbobj->parent->pszCallBackFn, pwbobj->pszCallBackObj, pwbobj->parent, pwbobj, id, lp1, lp2, lp3); }}
+		wbCallUserFunction(pwbobj->parent->pszCallBackFn, pwbobj->parent->pszCallBackObj, pwbobj->parent, pwbobj, id, lp1, lp2, lp3); }}
 
 #define SEND_MESSAGE			/* Send additional notification message */ \
 	((pwbobj->parent->uClass == TabControl) ? (pwbobj->parent->parent->style & WBC_NOTIFY) : (pwbobj->parent->style & WBC_NOTIFY))
@@ -44,7 +44,7 @@ BOOL SetTaskBarIcon(HWND hwnd, BOOL bModify);
 
 // External
 
-extern PWBOBJ AssignHandlerToTabs(HWND hwndParent, LPCTSTR pszObjName, LPCTSTR pszHandler);
+extern PWBOBJ AssignHandlerToTabs(HWND hwndParent, LPDWORD pszObj, LPCTSTR pszHandler);
 extern DWORD GetCalendarTime(PWBOBJ pwbo);
 extern LRESULT CALLBACK BrowserWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern BOOL RegisterImageButtonClass(void);
@@ -96,6 +96,7 @@ static HWND hToolBar = NULL;
 static HWND hStatusBar = NULL;
 static HWND hwndListView = NULL;
 PWBOBJ pwndMain = NULL;
+LISTVIEWCOLOR test;
 
 //------------------------------------------------------------- PUBLIC FUNCTIONS
 
@@ -254,7 +255,7 @@ HWND wbGetRequestedAppWindow(LPCTSTR pszCaption, BOOL bBringToFront)
 
 // Assign a handler to a window and to its children tab controls, if any
 
-BOOL wbSetWindowHandler(PWBOBJ pwbo, LPCTSTR pszObjName, LPCTSTR pszHandler)
+BOOL wbSetWindowHandler(PWBOBJ pwbo, LPDWORD pszObj, LPCTSTR pszHandler)
 {
 	if(!pszHandler || !*pszHandler)
 		return FALSE;
@@ -264,14 +265,18 @@ BOOL wbSetWindowHandler(PWBOBJ pwbo, LPCTSTR pszObjName, LPCTSTR pszHandler)
 
 	// An object name was passed
 
-	if(pszObjName && *pszObjName) {
-		pwbo->pszCallBackObj = (LPTSTR)pszObjName;
+	if(pszObj != NULL) {
+		pwbo->pszCallBackObj = pszObj;
 	} else
 		pwbo->pszCallBackObj = NULL;
 
 	pwbo->pszCallBackFn = (LPTSTR)pszHandler;
 
-	AssignHandlerToTabs(pwbo->hwnd, pszObjName, pszHandler);
+	if (pwbo->parent == NULL) //Only main window
+	{
+		AssignHandlerToTabs(pwbo->hwnd, pszObj, pszHandler);
+	}
+	
 
 	return TRUE;
 }
@@ -294,7 +299,7 @@ BOOL wbDestroyWindow(PWBOBJ pwbo)
 
 	pwbo->pszCallBackObj = NULL;
 	pwbo->pszCallBackFn = NULL;
-	AssignHandlerToTabs(pwbo->hwnd, TEXT(""), NULL);
+	AssignHandlerToTabs(pwbo->hwnd, NULL, NULL);
 
 	bRet = DestroyWindow(pwbo->hwnd);
 
@@ -846,14 +851,73 @@ static LRESULT CALLBACK DefaultWBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						break;
 
 					case ListView:
+					{
+						//UINT c = ((LPNMHDR)lParam)->code;
+						switch (((LPNMHDR)lParam)->code) {
+						//case 0xffffff4f:
+						case NM_CUSTOMDRAW:
+							if (pwbobj->pszCallBackFn != NULL) //has color handler
+							{
+								LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
+								
+								switch (lplvcd->nmcd.dwDrawStage)
+								{
+								case CDDS_PREPAINT:
+									return CDRF_NOTIFYITEMDRAW;
+								case CDDS_ITEMPREPAINT:
+									{
+										LISTVIEWCOLOR lvc = { 0 };
+										UINT ret = wbCallUserFunction(pwbobj->pszCallBackFn, pwbobj->pszCallBackObj, pwbobj->parent, pwbobj, ((LPNMHDR)lParam)->idFrom, lplvcd->nmcd.lItemlParam, -1, &lvc);
 
-						switch(((LPNMHDR)lParam)->code) {
+										if (ret > 0)
+										{
+											if (ret == 2) return CDRF_NOTIFYSUBITEMDRAW;
+											switch (lvc.nMode)
+											{
+											case 1:
+												lplvcd->clrText = lvc.dwForeground; break;
+											case 2:
+												lplvcd->clrTextBk = lvc.dwBackground; break;
+											case 3:
+												lplvcd->clrText = lvc.dwForeground;
+												lplvcd->clrTextBk = lvc.dwBackground; break;
+											default: return CDRF_DODEFAULT;
+											}
+											return CDRF_NEWFONT;
+										}
+										return CDRF_DODEFAULT;
+									}
+									break;
+								case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
+									{
+										LISTVIEWCOLOR lvc = { 0 };
+										UINT ret = wbCallUserFunction(pwbobj->pszCallBackFn, pwbobj->pszCallBackObj, pwbobj->parent, pwbobj, ((LPNMHDR)lParam)->idFrom, lplvcd->nmcd.lItemlParam, lplvcd->iSubItem, &lvc);
+										if (ret > 0)
+										{
+											switch (lvc.nMode)
+											{
+												case 1:
+													lplvcd->clrText = lvc.dwForeground; break;
+												case 2:
+													lplvcd->clrTextBk = lvc.dwBackground; break;
+												case 3:
+													lplvcd->clrText = lvc.dwForeground;
+													lplvcd->clrTextBk = lvc.dwBackground; break;
+												default: return CDRF_DODEFAULT;
+											}
+											return CDRF_NEWFONT;
+										}
+										return CDRF_DODEFAULT;
+									}
+									break;
+								}
+							}
+							break;
+						case NM_DBLCLK:
 
-							case NM_DBLCLK:
-
-								if(SEND_MESSAGE && TEST_FLAG(WBC_DBLCLICK))
-									CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, WBC_DBLCLICK, 0, 0);
-								break;
+							if (SEND_MESSAGE && TEST_FLAG(WBC_DBLCLICK))
+								CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, WBC_DBLCLICK, 0, 0);
+							break;
 
 
 							/*case NM_CLICK:
@@ -861,30 +925,31 @@ static LRESULT CALLBACK DefaultWBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 									CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, WBC_LBUTTON ,0,0);
 								break;
 */
-							case NM_RCLICK:
+						case NM_RCLICK:
 
-								if(SEND_MESSAGE && TEST_FLAG(WBC_RBUTTON))
-									CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, WBC_RBUTTON,0,0);
-								break;
-								
-								
-							case LVN_ITEMCHANGED:
+							if (SEND_MESSAGE && TEST_FLAG(WBC_RBUTTON))
+								CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, WBC_RBUTTON, 0, 0);
+							break;
 
-								if(((LPNM_LISTVIEW)lParam)->uChanged & (LVIF_STATE | LVIS_CHECKED)) {
-									CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, 0, 0, 0);
-								}
-								break;
 
-							case LVN_COLUMNCLICK:
+						case LVN_ITEMCHANGED:
 
-								hwndListView = pwbobj->hwnd;		// For CompareLVItems()
-								SendMessage(pwbobj->hwnd, LVM_SORTITEMS,
-									((NM_LISTVIEW FAR *)lParam)->iSubItem, (LPARAM)(PFNLVCOMPARE)CompareLVItemsAscending);
-								UpdateLVlParams(hwndListView);
-								if(SEND_MESSAGE && TEST_FLAG(WBC_HEADERSEL))
-									CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, WBC_HEADERSEL, ((NM_LISTVIEW FAR *)lParam)->iSubItem, 0);
-								break;
+							if (((LPNM_LISTVIEW)lParam)->uChanged & (LVIF_STATE | LVIS_CHECKED)) {
+								CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, 0, 0, 0);
+							}
+							break;
+
+						case LVN_COLUMNCLICK:
+
+							hwndListView = pwbobj->hwnd;		// For CompareLVItems()
+							SendMessage(pwbobj->hwnd, LVM_SORTITEMS,
+								((NM_LISTVIEW FAR *)lParam)->iSubItem, (LPARAM)(PFNLVCOMPARE)CompareLVItemsAscending);
+							UpdateLVlParams(hwndListView);
+							if (SEND_MESSAGE && TEST_FLAG(WBC_HEADERSEL))
+								CALL_CALLBACK(((LPNMHDR)lParam)->idFrom, WBC_HEADERSEL, ((NM_LISTVIEW FAR *)lParam)->iSubItem, 0);
+							break;
 						}
+					}
 						break;
 
 				} // switch(pwbobj->uClass)]
@@ -1414,17 +1479,18 @@ static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				//MessageBox(NULL, "midi", 0,0);
 				pwbobj = wbGetWBObj(hwnd);
 
-				if(!pwbobj || !pwbobj->pszCallBackFn)
+				if (!pwbobj || !pwbobj->pszCallBackFn)
 					break;
 
-				if(pwbobj->pszCallBackFn)
-//					wbCallUserFunction(pwbobj->pszCallBackFn, pwbobj, pwbobj, wParam, 0, 0, 0);
-					
-				{	wbCallUserFunction(pwbobj->pszCallBackFn, pwbobj->pszCallBackObj, ptr[3] ,wParam, ptr[0],   ptr[1],  ptr[2], 0);
-					
+				if (pwbobj->pszCallBackFn)
+					//					wbCallUserFunction(pwbobj->pszCallBackFn, pwbobj, pwbobj, wParam, 0, 0, 0);
+
+				{
+					wbCallUserFunction(pwbobj->pszCallBackFn, pwbobj->pszCallBackObj, ptr[3], wParam, ptr[0], ptr[1], ptr[2], 0);
+
 					return TRUE;
 				}
-			//	return DefaultWBProc(hwnd, msg, wParam, lParam);
+				//	return DefaultWBProc(hwnd, msg, wParam, lParam);
 			}
 			break;
 		// added by AF
@@ -1471,6 +1537,83 @@ static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			return DefaultWBProc(hwnd, msg, wParam, lParam);
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+LRESULT ProcessCustomDraw(LPARAM lParam)
+{
+	LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
+
+	switch (lplvcd->nmcd.dwDrawStage)
+	{
+		//!(cd->nmcd.dwDrawStage & CDDS_ITEM))
+		case CDDS_PREPAINT: //Before the paint cycle begins
+							//request notifications for individual listview items
+			//return CDRF_NOTIFYITEMDRAW;
+			return CDRF_NOTIFYSUBITEMDRAW;
+
+		case CDDS_ITEMPREPAINT: //Before an item is drawn
+		{
+			return CDRF_NOTIFYSUBITEMDRAW;
+		}
+		break;
+
+		//Before a subitem is drawn
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
+		{
+			switch (lplvcd->iSubItem)
+			{
+			case 0:
+			{
+				lplvcd->clrText = RGB(255, 255, 255);
+				lplvcd->clrTextBk = RGB(240, 55, 23);
+				return CDRF_NEWFONT;
+			}
+			break;
+
+			case 1:
+			{
+				lplvcd->clrText = RGB(255, 255, 0);
+				lplvcd->clrTextBk = RGB(0, 0, 0);
+				return CDRF_NEWFONT;
+			}
+			break;
+
+			case 2:
+			{
+				lplvcd->clrText = RGB(20, 26, 158);
+				lplvcd->clrTextBk = RGB(200, 200, 10);
+				return CDRF_NEWFONT;
+			}
+			break;
+
+			case 3:
+			{
+				lplvcd->clrText = RGB(12, 15, 46);
+				lplvcd->clrTextBk = RGB(200, 200, 200);
+				return CDRF_NEWFONT;
+			}
+			break;
+
+			case 4:
+			{
+				lplvcd->clrText = RGB(120, 0, 128);
+				lplvcd->clrTextBk = RGB(20, 200, 200);
+				return CDRF_NEWFONT;
+			}
+			break;
+
+			case 5:
+			{
+				lplvcd->clrText = RGB(255, 255, 255);
+				lplvcd->clrTextBk = RGB(0, 0, 150);
+				return CDRF_NEWFONT;
+			}
+			break;
+
+			}
+		}
+	}
+	return CDRF_DODEFAULT;
 }
 
 // Owner-drawn window class: subclasses MainWndProc

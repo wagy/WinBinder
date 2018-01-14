@@ -254,6 +254,20 @@ enum {
 #define WBC_MINSIZE				2
 #define WBC_MAXSIZE				3
 
+
+// Listview custom color state
+#define WBC_LV_NONE				0
+#define WBC_LV_FORE				1
+#define WBC_LV_BACK				2
+
+#define WBC_LV_DEFAULT			0
+#define WBC_LV_DRAW				1
+#define WBC_LV_COLUMNS			2
+
+
+
+
+
 // Windows standard identifiers
 
 #define IDDEFAULT				0			// Used with WBC_NOTIFY, meaning the parent window
@@ -312,7 +326,7 @@ typedef struct _wbo {			// wbo
 	DWORD style;				// WinBinder style
 	struct _wbo *parent;		// Parent window
 	LPTSTR pszCallBackFn;		// Callback function
-	LPTSTR pszCallBackObj;		// Object for callback method
+	LPDWORD pszCallBackObj;		// Object for callback method
 	LPARAM lparam;				// User-defined parameter
 	LONG lparams[8];			// General-purpose parameter array
 	RECT rcTitle;				// Title area
@@ -382,6 +396,12 @@ typedef enum {				// snf
 	SNF_MIDI,
 	SNF_AVI,
 } MEDIAFILEFORMAT;
+
+typedef struct {
+	int   nMode;
+	DWORD dwForeground;
+	DWORD dwBackground;
+} LISTVIEWCOLOR;
 
 //------------------------------------------------- GLOBAL VARIABLE DECLARATIONS
 
@@ -545,7 +565,7 @@ PFONT		wbSysDlgFont(PWBOBJ pwboParent, LPCTSTR pszTitle, PFONT pfont);
 
 PWBOBJ		wbCreateWindow(PWBOBJ pwboParent, UINT uWinBinderClass, LPCTSTR pszCaption, LPCTSTR pszTooltip, int xPos, int yPos, int nWidth, int nHeight, UINT id, DWORD dwWBStyle, long lParam);
 BOOL		wbDestroyWindow(PWBOBJ pwbo);
-BOOL		wbSetWindowHandler(PWBOBJ pwbo, LPCTSTR pszObjName,  LPCTSTR pszHandler);
+BOOL		wbSetWindowHandler(PWBOBJ pwbo, LPDWORD pszObj,  LPCTSTR pszHandler);
 BOOL		wbSetWindowSize(PWBOBJ pwbo, int nWidth, int nHeight, int nShowMode);
 DWORD		wbGetWindowSize(PWBOBJ pwbo, BOOL bClientRect);
 DWORD		wbGetWindowPosition(PWBOBJ pwbo, PWBOBJ pwboParent, BOOL bClientRect);
@@ -584,7 +604,7 @@ BOOL		wbSetCursor(PWBOBJ pwbo, LPCTSTR pszCursor, HANDLE handle);
 
 // Library-dependent functions
 
-BOOL		wbCallUserFunction(LPCTSTR pszFunctionName, LPCTSTR pszObjectName, PWBOBJ pwboParent, PWBOBJ pctrl, UINT id, LPARAM lParam1, LPARAM lParam2, LPARAM lParam3);
+UINT 		wbCallUserFunction(LPCTSTR pszFunctionName, LPDWORD pszObject, PWBOBJ pwboParent, PWBOBJ pctrl, UINT id, LPARAM lParam1, LPARAM lParam2, LPARAM lParam3);
 BOOL		wbError(LPCTSTR szFunction, int nType, LPCTSTR pszFmt, ...);
 void *		wbMalloc(size_t size);
 void *		wbCalloc(size_t nmemb, size_t size);
