@@ -46,7 +46,7 @@ setlocal enableextensions enabledelayedexpansion
 
 	if "%APPVEYOR_REPO_TAG_NAME%"=="" (
 		set APPVEYOR_REPO_TAG_NAME=%APPVEYOR_REPO_BRANCH%-%APPVEYOR_REPO_COMMIT:~0,8%
-		for /f "delims=" %%l in (wp/wb_version.h) do (
+		for /f "delims=" %%l in (wb\wb_version.h) do (
 			if not "%%l"=="" (
 				set line=%%l
 				if "!line:~8,17!"=="WINBINDER_VERSION" (
