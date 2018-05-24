@@ -33,7 +33,7 @@ setlocal enableextensions enabledelayedexpansion
 
 	xcopy %APPVEYOR_BUILD_FOLDER% C:\projects\php-src\ext\winbinder\ /s /e /y /f
 
-	xcopy %APPVEYOR_BUILD_FOLDER%\LICENSE %APPVEYOR_BUILD_FOLDER%\artifacts\ /y /f
+	rem xcopy %APPVEYOR_BUILD_FOLDER%\LICENSE %APPVEYOR_BUILD_FOLDER%\artifacts\ /y /f
 
 	if "%APPVEYOR%" equ "True" rmdir /s /q C:\cygwin >NUL 2>NUL
 	if %errorlevel% neq 0 exit /b 3
