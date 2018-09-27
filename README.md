@@ -18,6 +18,7 @@ You will need the source code of PHP plus the WinBinder source code.
 
 On which PHP versions has it been tested on?
   - PHP 7.0 
+  - PHP 7.2
 
 How to compile the WinBinder extension?
 =======================================
