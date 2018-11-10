@@ -348,7 +348,7 @@ DWORD wbGetImageDimensions(HBITMAP hbm)
 		wbFree(pbmi);
 
 	} else {
-		return (DWORD)MAKELONG(-1, -1);
+		return 0;
 	}
 
 	return dwDim;

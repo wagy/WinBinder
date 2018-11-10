@@ -330,7 +330,7 @@ ZEND_FUNCTION(wbtemp_get_listview_text)
 			for (ncol = 0; ncol < ncols; ncol++) {
 				if (wbGetListViewItemText((PWBOBJ)pwbo, nitem, ncol, szItem, MAX_ITEM_STRING - 1)) {
 					str = WideChar2Utf8(szItem, &len);
-					add_next_index_stringl(return_value, str, len);
+					add_next_index_stringl(return_value, str, len-1);
 				}
 				else
 					add_next_index_stringl(return_value, "", 0);
@@ -348,7 +348,7 @@ ZEND_FUNCTION(wbtemp_get_listview_text)
 			for(nitem = 0; nitem < nitems; nitem++) {
 				if(wbGetListViewItemText((PWBOBJ)pwbo, nitem, ncol, szItem, MAX_ITEM_STRING - 1)) {
 					str = WideChar2Utf8(szItem, &len);
-					add_next_index_stringl(return_value, str, len);
+					add_next_index_stringl(return_value, str, len-1);
 				} else
 					add_next_index_stringl(return_value, "", 0);
 			}
@@ -362,7 +362,7 @@ ZEND_FUNCTION(wbtemp_get_listview_text)
 				for(ncol = 0; ncol < ncols; ncol++) {
 					if(wbGetListViewItemText((PWBOBJ)pwbo, nitem, ncol, szItem, MAX_ITEM_STRING - 1)) {
 						str = WideChar2Utf8(szItem, &len);
-						add_next_index_stringl(return_value, str, len);
+						add_next_index_stringl(return_value, str, len-1);
 					} else
 						add_next_index_stringl(return_value, "", 0);
 				}

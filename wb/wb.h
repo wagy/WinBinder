@@ -105,6 +105,7 @@
 #define MAX_IMAGELIST_IMAGES	128		// Maximum images inside a ImageList
 #define REPEAT_TIMER			901		// Timer identifier for ImageButtons
 #define NOCOLOR					CLR_INVALID
+#define MAX_PATH_BUFFER			1024	// Maximum size for selected files
 
 // Strings
 
@@ -555,7 +556,7 @@ LPTSTR		wbStriStr(LPCTSTR pszString, LPCTSTR pszPattern);
 
 // WB_SYSDLG.C
 
-BOOL		wbSysDlgOpen(PWBOBJ pwboParent, LPCTSTR pszTitle, LPCTSTR pszFilter, LPCTSTR pszPath, LPTSTR pszFileName, DWORD style);
+BOOL		wbSysDlgOpen(PWBOBJ pwboParent, LPCTSTR pszTitle, LPCTSTR pszFilter, LPCTSTR pszPath, LPTSTR pszFileName, DWORD style, DWORD bufSize);
 BOOL		wbSysDlgSave(PWBOBJ pwboParent, LPCTSTR pszTitle, LPCTSTR pszFilter, LPCTSTR pszPath, LPTSTR pszFileName, LPCTSTR lpstrDefExt);
 BOOL		wbSysDlgPath(PWBOBJ pwboParent, LPCTSTR pszTitle, LPCTSTR pszPath, LPTSTR pszSelPath);
 COLORREF	wbSysDlgColor(PWBOBJ pwboParent, LPCTSTR pszTitle, COLORREF color);
@@ -612,6 +613,7 @@ BOOL		wbFree(void *ptr);
 void *		wbRealloc(void *ptr, size_t size);
 char *		wbStrDup(const char *string);
 char *		wbStrnDup(const char *string, size_t size);
+
 
 //------------------------------------------------------------------ END OF FILE
 

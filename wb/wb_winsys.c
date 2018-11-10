@@ -109,7 +109,7 @@ BOOL wbInit(void)
 		OFSTRUCT ofs;
 		char szApp[MAX_PATH];
 		TCHAR *szCmd = GetCommandLine();
-		char *cmd = WideChar2Utf8(szCmd, 0);
+		char *cmd = WideChar2Utf8(szCmd, NULL);
 
 		GetToken(cmd, 0, szApp, MAX_PATH - 1);
 		strcat(szApp, ".manifest");

@@ -112,7 +112,7 @@ BOOL wbSetListViewItemChecked(PWBOBJ pwbo, int nItem, BOOL bChecked)
 		return FALSE;
 
 	lvi.stateMask = LVIS_STATEIMAGEMASK;
-	lvi.state = bChecked ? LVIS_CHECKED : 0;
+	lvi.state = bChecked ? LVIS_CHECKED : 0x1000;
 
 	return SendMessage(pwbo->hwnd, LVM_SETITEMSTATE, (WPARAM)nItem, (LPARAM)&lvi);
 }

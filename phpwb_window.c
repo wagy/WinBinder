@@ -126,31 +126,34 @@ ZEND_FUNCTION(wb_get_size)
 
 	if(Z_TYPE_P(source) == IS_LONG) {	// It's an integer: PWBO, HBITMAP or HICON
 
-		if(Z_LVAL_P(source))
-			RETURN_NULL()
-		else
+		if (!source->value.lval)
+			RETURN_NULL();
+		//Test first is image
+		size = wbGetImageDimensions((HBITMAP)source->value.lval);
+		if (size == 0) //if not image then get windo or listview size
+		{
 			pwbo = (PWBOBJ)(void *)source->value.lval;
+			if (wbIsWBObj(pwbo, FALSE)) {
+				// lparam here means "column widths"
+				if (pwbo->uClass == ListView && lparam) {
+					int i, cols;
+					int pwidths[MAX_LISTVIEWCOLS];
 
-		if(wbIsWBObj(pwbo, FALSE)) {
-			// lparam here means "column widths"
-			if(pwbo->uClass == ListView && lparam) {
-				int i, cols;
-				int pwidths[MAX_LISTVIEWCOLS];
-
-				// Build the array
-
-				cols = wbGetListViewColumnWidths(pwbo, pwidths);
-				array_init(return_value);
-				for(i = 0; i < cols; i++)
-					add_next_index_long(return_value, pwidths[i]);
-				return;
-			} else {
-				// lparam here means "client area"
-				size = wbGetWindowSize(pwbo, lparam);
+					// Build the array
+					cols = wbGetListViewColumnWidths(pwbo, pwidths);
+					array_init(return_value);
+					for (i = 0; i < cols; i++)
+						add_next_index_long(return_value, pwidths[i]);
+					return;
+				}
+				else {
+					// lparam here means "client area"
+					size = wbGetWindowSize(pwbo, lparam);
+				}
 			}
-
-		} else {
-			size = wbGetImageDimensions((HBITMAP)source->value.lval);
+			else{
+				RETURN_NULL();
+			}
 		}
 
 	} else if(Z_TYPE_P(source) == IS_STRING) {

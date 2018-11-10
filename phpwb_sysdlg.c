@@ -21,10 +21,10 @@ ZEND_FUNCTION(wbtemp_sys_dlg_open)
 {
 	zend_long pwboParent = (long)NULL;
 	char *title = "", *filter = "", *path = "";
-	TCHAR  *Current, firstString[MAX_PATH];
-	int title_len = 0, filter_len = 0, path_len = 0, numCount=0, fileCount = 0;
+	int title_len = 0, filter_len = 0, path_len = 0, fileCount = 0;
 	zend_long style;
-	TCHAR szFile[MAX_PATH] = TEXT("");
+	TCHAR szFile[MAX_PATH_BUFFER] = { 0 };
+	TCHAR szDir[MAX_PATH] = { 0 };
 
 	char *file = 0;
 	int file_len = 0;
@@ -45,63 +45,35 @@ ZEND_FUNCTION(wbtemp_sys_dlg_open)
 	szFilter = Utf82WideChar(filter, filter_len);
 	szPath = Utf82WideChar(path, path_len);
 
-	wbSysDlgOpen((PWBOBJ)pwboParent, szTitle, szFilter, szPath, szFile, style);
+	wbSysDlgOpen((PWBOBJ)pwboParent, szTitle, szFilter, szPath, szFile, style, MAX_PATH_BUFFER);
 	
-	
-	
-	if(*szFile) {
+	if(*szFile) 
+	{
 		if (!BITTEST(style, WBC_MULTISELECT))
 		{
-				file = WideChar2Utf8(szFile, &file_len);
-				RETURN_STRINGL(file, file_len);
+				file = WideChar2Utf8(szFile, &file_len);				
+				RETURN_STRING(file);
 		}
-		//file = WideChar2Utf8(szFile, &file_len);
 		array_init(return_value);
-		wcscpy(thisOne,"");
-		// [...]
-		// szFile is a string separated by \0 and \0\0 for multiple entries
-		for (Current = szFile; numCount < MAX_PATH;  numCount++) 
-		{												
-			wcscpy(thisOne,Current);
-			Current += wcslen(Current);
-			numCount += wcslen(Current);
-			   						
-			if (wcslen(thisOne) > 0)
-			{	if (fileCount == 0)
-				{
-					wcscpy(firstString,thisOne);
-				}
-				else
-				{	
-					wcscpy(fullPath, firstString);
-					if (fullPath[wcslen(fullPath)] != "\\")
-					{
-						wcscat(fullPath, "\\");
-					}
-					wcscat(fullPath, thisOne);
-					file = WideChar2Utf8(fullPath, &file_len);
-					add_next_index_string(return_value, file, 1);
-				}
-				fileCount++;
-				
-				
-			}
-			Current++;	
-			numCount++;
-			wcscpy(thisOne,Current);
-		
-			if (Current[0] == '\0')
-			{
-				if (fileCount == 1) 
-				{
-					file = WideChar2Utf8(firstString, &file_len);
-					add_next_index_string(return_value, file, 1);
-				}
-				return;
-				
 
-			}			
-		}			
+		TCHAR* ptr = szFile;
+		wcscpy(szDir, ptr);
+		ptr += wcslen(szDir) +1;
+		while (*ptr)
+		{
+			if (fileCount == 0) wcscat(szDir, L"\\");
+			wcscpy(fullPath, szDir);
+			wcscat(fullPath, ptr);
+			ptr += (wcslen(ptr) + 1);
+			file = WideChar2Utf8(fullPath, &file_len);
+			add_next_index_string(return_value, file);
+			fileCount++;
+		}
+		if (fileCount == 0)
+		{
+			file = WideChar2Utf8(szDir, &file_len);
+			add_next_index_string(return_value, file);
+		}
 	} else
 		RETURN_STRING("")
 }

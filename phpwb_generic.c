@@ -233,9 +233,10 @@ char *WideChar2Utf8(LPCTSTR wcs, int *plen)
 	if (str_len == 0)
 		return NULL;
 
-	str = wbMalloc(str_len+1);
-	str[str_len] = '\0';
-	str[str_len-1] = '\0';
+	str = wbMalloc(str_len);
+	//str = wbMalloc(str_len + 1);
+	//str[str_len] = '\0';
+	//str[str_len-1] = '\0';
 
 	if (plen)
 		*plen = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, str, str_len, NULL, NULL);

@@ -41,9 +41,9 @@ static TCHAR szSearchPath[MAX_PATH];
 
 //----------------------------------------------------------- EXPORTED FUNCTIONS
 
-BOOL wbSysDlgOpen(PWBOBJ pwboParent, LPCTSTR pszTitle, LPCTSTR pszFilter, LPCTSTR pszPath, LPTSTR pszFileName, DWORD dwWBStyle)
+BOOL wbSysDlgOpen(PWBOBJ pwboParent, LPCTSTR pszTitle, LPCTSTR pszFilter, LPCTSTR pszPath, LPTSTR pszFileName, DWORD dwWBStyle, DWORD bufSize)
 {
-	OPENFILENAME ofn;
+	OPENFILENAME ofn = { 0 };
 	BOOL bRet;
 	TCHAR *pszCopy;
 
@@ -60,9 +60,9 @@ BOOL wbSysDlgOpen(PWBOBJ pwboParent, LPCTSTR pszTitle, LPCTSTR pszFilter, LPCTST
 	ofn.nMaxCustFilter = 0;
 	ofn.nFilterIndex = 0;
 	ofn.lpstrFile = pszFileName;
-	ofn.nMaxFile = MAX_PATH;
+	ofn.nMaxFile = bufSize -1;
 	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = MAX_PATH;
+	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = pszCopy;
 	ofn.lpstrTitle = (pszTitle && * pszTitle) ? pszTitle : NULL;
 	ofn.Flags = OFN_HIDEREADONLY | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
