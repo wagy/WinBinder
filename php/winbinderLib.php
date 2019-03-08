@@ -82,6 +82,11 @@ define('StatusBar', StatusBar);
  */
 define('TabControl', TabControl);
 
+/**
+ * A Calendar control displays a standard month calendar where the user can select a date.
+ */
+define('Calendar', Calendar);
+
 /** --- Windows standard identifiers --- */
 define('IDABORT', IDABORT);
 define('IDCANCEL', IDCANCEL);
@@ -137,6 +142,10 @@ define('WBC_NUMBER', WBC_NUMBER);
 define('WBC_MULTILINE', WBC_MULTILINE);
 define('WBC_KEYDOWN', WBC_MULTILINE);
 define('WBC_NOHEADER', WBC_NOHEADER);
+define('WBC_BORDER', WBC_BORDER);
+
+define('WBC_RTF_TEXT', WBC_RTF_TEXT);
+
 
 /** --- Font attributes --- */
 define('FTA_BOLD',FTA_BOLD);
@@ -740,3 +749,35 @@ function wb_set_range($control, $vmin, $vmax) {  }
  * @return int The return value is used for debugging purposes only and may be ignored.
  */
 function wb_main_loop() { }
+
+/**
+ * bool wb_exec (string command [, string param])
+ *
+ * Opens or executes a command. The string passed to this function can be one of the following:
+ *
+ * A WinBinder script.
+ * An executable file.
+ * A non-executable file associated with an application.
+ * A folder name. Passing a null or empty string opens the current folder.
+ * A help file or help file topic.
+ * An URL, e-mail, newsgroup, or another Internet client application.
+ * Optional parameters can be passed to the command or application through the variable param.
+ *
+ *  The function wb_exec() is useful for running a WinBinder script as a separate process. If command has a .phpw extension, this will be detected by the function and processed adequately.
+ * The following non-case-sensitive modifiers can be used as param:
+ *
+ * Param Meaning "" or empty
+ * Run the script in the same mode as the calling process
+ *
+ * "w" or "windowed" Run the script in windowed mode (release mode)
+ * "c" or "console"  Run the script in console mode (debug mode)
+ * "o" or "open"     Ignore the .phpw extension and treat command as any other string, shell-executing it ¹
+ *
+ * ¹ Usually, shell-executing a .phpw script will usually run it in windowed mode, unless the user has changed the .phpw association in Windows.
+ * NOTE: Only .phpw is considered to be a WinBinder script. This means the .php extension will not be detected by wb_exec() and will be shell-executed normally.
+ *
+ * @param string $command
+ * @param string $param [optional]
+*/
+
+function wb_exec($command, $param=null) {}

@@ -932,7 +932,7 @@ ZEND_FUNCTION(wbtemp_set_text)
 
 ZEND_FUNCTION(wbtemp_get_text)
 {
-	TCHAR *ptext;
+	TCHAR *ptext = NULL;
 	zend_long pwbo;
 	zend_long len, index = -1;
 
@@ -949,6 +949,17 @@ ZEND_FUNCTION(wbtemp_get_text)
 	if(!wbIsWBObj((void *)pwbo, TRUE))
 		RETURN_NULL()				// This is an error, so return NULL
 
+	//Get rtf text
+	if (((PWBOBJ)pwbo)->uClass == RTFEditBox && index == WBC_RTF_TEXT){
+
+		if (wbGetRtfText((PWBOBJ)pwbo, &str)) {
+			//if you use SF_TEXT|SF_UNICODE 
+			//str = WideChar2Utf8(ptext, &str_len);
+			RETURN_STRINGL(str, strlen(str)); 
+		}
+		RETURN_STRING("") 
+	}
+
 	len = wbGetTextLength((PWBOBJ)pwbo, index) + 1;
 	if(len) {
 		ptext = emalloc(sizeof(TCHAR) * (len + 1));
@@ -958,9 +969,13 @@ ZEND_FUNCTION(wbtemp_get_text)
 			wbGetText((PWBOBJ)pwbo, ptext, len, index);
 			if(*ptext) {
 				str = WideChar2Utf8(ptext, &str_len);
-				RETURN_STRINGL(str, max(0, str_len - 1))
-			} else
+				efree(ptext);
+				RETURN_STRINGL(str, max(0, str_len))
+			}
+			else {
+				efree(ptext);
 				RETURN_STRING("")	// This is a valid empty string
+			}
 		}
 	} else {
 		RETURN_STRING("")	// This is a valid empty string

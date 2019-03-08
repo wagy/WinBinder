@@ -93,7 +93,7 @@ ZEND_FUNCTION(wbtemp_get_treeview_item_text)
 
 	wbGetTreeViewItemText((PWBOBJ)pwbo, (HTREEITEM)item, szItem, MAX_ITEM_STRING - 1);
 	str = WideChar2Utf8(szItem, &str_len);
-	RETURN_STRING(str)
+	RETURN_STRINGL(str, str_len)
 }
 
 /*

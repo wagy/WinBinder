@@ -52,7 +52,7 @@ ZEND_FUNCTION(wbtemp_sys_dlg_open)
 		if (!BITTEST(style, WBC_MULTISELECT))
 		{
 				file = WideChar2Utf8(szFile, &file_len);				
-				RETURN_STRING(file);
+				RETURN_STRINGL(file, file_len);
 		}
 		array_init(return_value);
 
@@ -66,13 +66,13 @@ ZEND_FUNCTION(wbtemp_sys_dlg_open)
 			wcscat(fullPath, ptr);
 			ptr += (wcslen(ptr) + 1);
 			file = WideChar2Utf8(fullPath, &file_len);
-			add_next_index_string(return_value, file);
+			add_next_index_stringl(return_value, file, file_len);
 			fileCount++;
 		}
 		if (fileCount == 0)
 		{
 			file = WideChar2Utf8(szDir, &file_len);
-			add_next_index_string(return_value, file);
+			add_next_index_stringl(return_value, file, file_len);
 		}
 	} else
 		RETURN_STRING("")
@@ -112,7 +112,7 @@ ZEND_FUNCTION(wbtemp_sys_dlg_save)
 
 	if(*szFile) {
 		file = WideChar2Utf8(szFile, &file_len);
-		RETURN_STRING(file)
+		RETURN_STRINGL(file, file_len)
 	} else
 		RETURN_STRING("")
 }
@@ -143,7 +143,7 @@ ZEND_FUNCTION(wb_sys_dlg_path)
 
 	if(*szSelPath) {
 		selPath = WideChar2Utf8(szSelPath, &sel_len);
-		RETURN_STRING(selPath)
+		RETURN_STRINGL(selPath, sel_len)
 	}
 	else
 		RETURN_STRING("")

@@ -415,13 +415,16 @@ function wb_create_items($ctrl, $items, $clear=false, $param=null)
 			// For each row
 
 			for($i = 0; $i < count($items); $i++) {
-				if(!is_scalar($items[$i]))
-					$last = wbtemp_create_listview_item(
-						$ctrl, -1, -1, (string)$items[$i][0]);
+				if(is_array($items[$i]))
+                {
+                    $last = wbtemp_create_listview_item($ctrl, -1, -1, (string)$items[$i][0]);
+                }
 				else
-					$last = wbtemp_create_listview_item(
-						$ctrl, -1, -1, (string)$items[$i]);
-				wbtemp_set_listview_item_text($ctrl, -1, 0, (string)$items[$i][0]);
+                {
+                    $last = wbtemp_create_listview_item($ctrl, -1, -1, (string)$items[$i]);
+                }
+
+				//wbtemp_set_listview_item_text($ctrl, -1, 0, (string)$items[$i][0]);
 
 				// For each column except the first
 
@@ -583,6 +586,24 @@ function wb_set_listview_color($lparam3=0, $fore=NOCOLOR, $back=NOCOLOR)
 		}
 	}
     return $ret;
+}
+
+/**
+ * Append text on a RTFEditBox
+ * min = max = -1 at the end
+ *
+ * @param int $ctrl
+ * @param string $text
+ * @param int $min  optional default -1
+ * @param int $max  optional default -1
+ */
+function wb_append_text($ctrl, $text, $min=-1, $max=-1)
+{
+    wb_set_focus($ctrl);
+    $text .= chr(0);
+    $txt = mb_convert_encoding($text, 'UTF-16LE', 'utf-8');
+    wb_send_message($ctrl, EM_SETSEL, $min, $max);
+    wb_send_message($ctrl, EM_REPLACESEL, 0, wb_get_address($txt));
 }
 //-------------------------------------------------------------------------- END
 

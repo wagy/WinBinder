@@ -196,20 +196,19 @@ zval *process_array(zval *zitems)
 
 TCHAR * Utf82WideChar(const char *str, int len)
 {
-	TCHAR *wstr = NULL;
+	TCHAR *wstr = "";
 	int wlen = 0;
 	if (!str)
 		return NULL;
 
 	if (len <= 0)
-		len = -1; //len = strlen(str);
+		len = strlen(str);
 
-	wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
-
-	wstr = wbMalloc(sizeof(TCHAR)*(wlen+1));
-	wstr[wlen] = '\0';
-
-	MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wstr + 1);
+	wlen = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+	wstr = wbMalloc(sizeof(TCHAR)*(wlen));
+	if (len > 0)
+		MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
+	wstr[wlen-1] = '\0';
 	return wstr;
 }
 
@@ -219,6 +218,28 @@ void Utf82WideCharCopy(const char *str, int str_len, TCHAR *wcs, int wcs_len)
 		return NULL;
 
 	MultiByteToWideChar(CP_UTF8, 0, str, str_len, wcs, wcs_len);
+}
+
+char *ConvertUTF16ToUTF8(LPCWSTR pszTextUTF16, int *plen) {
+	char *str = 0;
+
+	if (pszTextUTF16 == NULL) return NULL;
+
+	int utf16len = wcslen(pszTextUTF16);
+	int utf8len = WideCharToMultiByte(CP_UTF8, 0, pszTextUTF16, utf16len,
+		NULL, 0, NULL, NULL);
+
+	if (utf8len == 0)
+		return NULL;
+
+	str = wbMalloc(utf8len);
+	int size = WideCharToMultiByte(CP_UTF8, 0, pszTextUTF16, utf16len, str, utf8len, 0, 0);
+	if(plen)
+	{
+		if (size > 0) size--;
+		*plen = size;
+	}
+	return str;
 }
 
 char *WideChar2Utf8(LPCTSTR wcs, int *plen)
@@ -234,14 +255,13 @@ char *WideChar2Utf8(LPCTSTR wcs, int *plen)
 		return NULL;
 
 	str = wbMalloc(str_len);
-	//str = wbMalloc(str_len + 1);
-	//str[str_len] = '\0';
-	//str[str_len-1] = '\0';
-
+	int  size = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, str, str_len, NULL, NULL);
+	str[str_len - 1] = '\0';
 	if (plen)
-		*plen = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, str, str_len, NULL, NULL);
-	else
-		WideCharToMultiByte(CP_UTF8, 0, wcs, -1, str, str_len, NULL, NULL);
+	{
+		if (size > 0) size--;
+		*plen = size;
+	}
 	return str;
 }
 

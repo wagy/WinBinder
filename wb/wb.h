@@ -265,6 +265,9 @@ enum {
 #define WBC_LV_DRAW				1
 #define WBC_LV_COLUMNS			2
 
+// RTFEditBox
+#define WBC_RTF_TEXT			1
+
 
 
 
@@ -453,6 +456,7 @@ BOOL		wbGetEnabled(PWBOBJ pwbo);
 BOOL		wbSetEnabled(PWBOBJ pwbo, BOOL bState);
 BOOL		wbSetText(PWBOBJ pwbo, LPCTSTR pszText, int nItem, BOOL bTooltip);
 BOOL		wbGetText(PWBOBJ pwbo, LPTSTR pszText, UINT nMaxChars, int nIndex);
+BOOL		wbGetRtfText(PWBOBJ pwbo, char **unc);
 UINT		wbGetTextLength(PWBOBJ pwbo, int nIndex);
 BOOL		wbDeleteItems(PWBOBJ pwbo, BOOL bClearAll);
 BOOL		wbRefreshControl(PWBOBJ pwbo, int xpos, int ypos, int nWidth, int nHeight, BOOL bNow);

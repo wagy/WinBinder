@@ -880,6 +880,37 @@ UINT wbGetTextLength(PWBOBJ pwbo, int nIndex)
 	}
 }
 
+DWORD CALLBACK EditStreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+{
+	char **rtf = (char**)dwCookie;
+	*rtf = wbMalloc(cb+1);
+	//strcpy_s(*rtf, cb, pbBuff);
+	memset(*rtf, 0, cb+1);
+	memcpy(*rtf, pbBuff, cb);
+	*pcb = cb;
+	return 0;
+}
+
+BOOL wbGetRtfText(PWBOBJ pwbo, char **unc)
+{
+	if (!wbIsWBObj(pwbo, TRUE))					// Is it a valid control?
+		return FALSE;
+
+	switch (pwbo->uClass) {
+		case RTFEditBox: 
+		{
+			EDITSTREAM es = { 0 }; 
+			es.dwCookie = (DWORD_PTR)unc;
+			es.pfnCallback = &EditStreamOutCallback;
+			SendMessage(pwbo->hwnd, EM_STREAMOUT, (WPARAM)(SF_RTF), (LPARAM)&es); 
+			//use SF_TEXT|SF_UNICODE  then you need 
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+
 BOOL wbGetText(PWBOBJ pwbo, LPTSTR pszText, UINT nMaxChars, int nIndex)
 {
 	if(!wbIsWBObj(pwbo, TRUE))					// Is it a valid control?
